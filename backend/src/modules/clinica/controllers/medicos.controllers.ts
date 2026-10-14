@@ -1,12 +1,11 @@
 import { Body, Controller, Get, NotImplementedException, Param, ParseIntPipe, Patch, Query } from "@nestjs/common";
 import { ApiBearerAuth } from "@nestjs/swagger";
 import { UpdateEstadoReservaDto } from "../dtos/input/update-estado-reserva.dto.js";
+import { ReservasService } from "../services/reservas.service.js";
 
 @Controller("medicos")
 export class MedicosController{
-    constructor(){
-
-    }
+    constructor(private readonly reservaS: ReservasService){}
 
     @ApiBearerAuth()
     @Get(':id_medico/reserva')
@@ -14,7 +13,7 @@ export class MedicosController{
         @Param('id_medico', ParseIntPipe) idMedico: number,
         @Query('fecha') fecha:string,
     ): Promise<any[]>{
-        throw new NotImplementedException();
+        return this.reservaS.obtenerReservaPorFecha(idMedico, fecha)
     }
 
     @ApiBearerAuth()
@@ -23,6 +22,6 @@ export class MedicosController{
         @Param('id_reserva', ParseIntPipe) idReserva: number,
         @Body() updEstado: UpdateEstadoReservaDto,
     ): Promise<any>{
-        throw new NotImplementedException();
+        return this.reservaS.cambiarEstadoReserva(idReserva, updEstado.estado)
     }
 }

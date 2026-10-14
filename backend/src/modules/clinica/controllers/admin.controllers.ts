@@ -2,16 +2,25 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Patch
 import { ApiBearerAuth } from "@nestjs/swagger";
 import { CreateReservaAdminDto } from "../dtos/input/create-reserva-admin.dto.js";
 import { UpdateValorConsultaDto } from "../dtos/input/update-valor-consulta.dto.js";
+import { ReservasService } from "../services/reservas.service.js";
+import { MedicoService } from "../services/medicos.service.js";
 
 @Controller('admin')
 export class AdminController{
+    constructor(
+        private readonly reservaS: ReservasService,
+        private readonly medicoS: MedicoService
+    ){
+
+    }
+
     @ApiBearerAuth()
     @Get('reserva')
     async listarReservas(
         @Query('fecha') fecha?: string,
-        @Query('id_medico') idMedico?: number,
+        @Query('id_medico', new ParseIntPipe({ optional: true})) idMedico?: number,
     ): Promise<any[]>{
-        throw new Error('Método no implementado');
+        return this.reservaS.listarReservasAdmin(fecha, idMedico)
     }
 
     @ApiBearerAuth()
@@ -20,7 +29,11 @@ export class AdminController{
     async reservarTurnoAdmin(
         @Body() createReservaAdmin: CreateReservaAdminDto
     ): Promise<any>{
-        throw new Error('Método no implementado');
+        return this.reservaS.reservarTurnoAdmin(
+            createReservaAdmin.id_paciente,
+            createReservaAdmin.id_medico,
+            createReservaAdmin.fecha_hora
+        )
     }
 
     @ApiBearerAuth()
@@ -29,7 +42,7 @@ export class AdminController{
     async cancelarReservaAdmin(
         @Param('id_reserva', ParseIntPipe) idReserva: number,
     ): Promise<void>{
-        throw new Error('Método no implementado');
+        return this.reservaS.cancelarReservaAdmin(idReserva);
     }
 
     @ApiBearerAuth()
@@ -39,6 +52,6 @@ export class AdminController{
         @Param('id_medico', ParseIntPipe) idMedico: number,
         @Body() updValorConsulta: UpdateValorConsultaDto,
     ): Promise<void>{
-        throw new Error('Método no implementado');
+        return this.medicoS.modificarValorConsulta(idMedico, updValorConsulta.valor_consulta)
     }
 }

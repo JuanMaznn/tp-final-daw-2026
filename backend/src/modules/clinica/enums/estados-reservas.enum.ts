@@ -1,5 +1,4 @@
-
-export enum EstadosReservas{
+export enum EstadosReservasEnum{
     ACTIVO= "ACTIVO",
     ATENDIDO="ATENDIDO",
     AUSENTE = "AUSENTE",
