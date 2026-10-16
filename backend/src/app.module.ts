@@ -8,6 +8,12 @@ import { Usuario } from './modules/clinica/entities/usuarios.entity.js';
 import { Reserva } from './modules/clinica/entities/reservas.entity.js';
 import { Medico } from './modules/clinica/entities/medicos.entity.js';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthService } from './modules/auth/services/auth.service.js';
+
+import { LoginController } from './modules/auth/controllers/login.controllers.js';
+import { UsuarioController } from './modules/clinica/controllers/usuarios.controllers.js';
+import { MedicosController } from './modules/clinica/controllers/medicos.controllers.js';
+import { AdminController } from './modules/clinica/controllers/admin.controllers.js';
 
 @Module({
   imports: [
@@ -21,12 +27,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       entities: [Usuario, Reserva, Medico],
       synchronize: true,
     }),
-    ConfigModule.forRoot({ isGlobal: true}),
+    ConfigModule.forRoot({ isGlobal: true }),
     AuthModule,
-    ClinicaModule
+    ClinicaModule,
   ],
   controllers: [],
   providers: [],
   exports: []
 })
-export class AppModule {}
+export class AppModule { }

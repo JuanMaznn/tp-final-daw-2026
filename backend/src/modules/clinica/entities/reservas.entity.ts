@@ -14,10 +14,10 @@ export class Reserva{
     @Column({ name: "id_paciente"})
     idPaciente: number;
 
-    @Column( {name: "fecha_hora", type: "datetime"})
+    @Column( {name: "fecha_hora", type: "timestamp"})
     fechaHora: Date;
 
-    @Column({ name: "estados_reservas", type: "enum", enum: EstadosReservasEnum})
+    @Column({ name: "estados_reservas", type: "varchar", default: EstadosReservasEnum.ACTIVO})
     estadosReservas: EstadosReservasEnum
 
     @Column({ name: "valor_consulta"})
