@@ -1,11 +1,11 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { EstadosReservasEnum } from "../enums/estados-reservas.enum.js";
 import { Medico } from "./medicos.entity.js";
 import { Usuario } from "./usuarios.entity.js";
 
 @Entity({ name: "reservas"})
 export class Reserva{
-    @PrimaryColumn()
+    @PrimaryGeneratedColumn()
     id: number;
 
     @Column({name: "id_medico"})
@@ -17,7 +17,7 @@ export class Reserva{
     @Column( {name: "fecha_hora", type: "timestamp"})
     fechaHora: Date;
 
-    @Column({ name: "estados_reservas", type: "varchar", default: EstadosReservasEnum.ACTIVO})
+    @Column({ name: "estado", type: "enum", enum: EstadosReservasEnum, default: EstadosReservasEnum.ACTIVO })
     estadosReservas: EstadosReservasEnum
 
     @Column({ name: "valor_consulta"})

@@ -1,10 +1,10 @@
-import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryColumn } from "typeorm";
+import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Usuario } from "./usuarios.entity.js";
 import { Reserva } from "./reservas.entity.js";
 
 @Entity({name: "medicos"})
 export class Medico{
-    @PrimaryColumn()
+    @PrimaryGeneratedColumn()
     id: number;
 
     @Column({name: "id_usuario"})
