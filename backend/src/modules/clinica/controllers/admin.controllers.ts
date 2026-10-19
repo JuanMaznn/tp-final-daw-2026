@@ -1,5 +1,7 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Patch, Post, Query } from "@nestjs/common";
-import { ApiBearerAuth } from "@nestjs/swagger";
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from "@nestjs/common";
+import { ApiBearerAuth, ApiOkResponse } from "@nestjs/swagger";
+import { ListReservaDTO } from "../dtos/output/list-reserva.dto.js";
+import { AuthGuard } from "../../auth/guards/auth.guard.js";
 import { CreateReservaAdminDto } from "../dtos/input/create-reserva-admin.dto.js";
 import { UpdateValorConsultaDto } from "../dtos/input/update-valor-consulta.dto.js";
 import { ReservasService } from "../services/reservas.service.js";
@@ -15,20 +17,23 @@ export class AdminController{
     }
 
     @ApiBearerAuth()
+    @UseGuards(AuthGuard)
+    @ApiOkResponse({ type: ListReservaDTO, isArray: true })
     @Get('reserva')
     async listarReservas(
         @Query('fecha') fecha?: string,
         @Query('id_medico', new ParseIntPipe({ optional: true})) idMedico?: number,
-    ): Promise<any[]>{
+    ): Promise<ListReservaDTO[]>{
         return this.reservaS.listarReservasAdmin(fecha, idMedico)
     }
 
     @ApiBearerAuth()
+    @UseGuards(AuthGuard)
     @Post('reservas')
     @HttpCode(HttpStatus.CREATED)
     async reservarTurnoAdmin(
         @Body() createReservaAdmin: CreateReservaAdminDto
-    ): Promise<any>{
+    ): Promise<{ id: number }>{
         return this.reservaS.reservarTurnoAdmin(
             createReservaAdmin.id_paciente,
             createReservaAdmin.id_medico,
@@ -37,6 +42,7 @@ export class AdminController{
     }
 
     @ApiBearerAuth()
+    @UseGuards(AuthGuard)
     @Patch('reservas/:id_reserva/cancelar')
     @HttpCode(HttpStatus.OK)
     async cancelarReservaAdmin(
@@ -46,6 +52,7 @@ export class AdminController{
     }
 
     @ApiBearerAuth()
+    @UseGuards(AuthGuard)
     @Patch('medicos/:id_medico/valor-consulta')
     @HttpCode(HttpStatus.OK)
     async modificarValorConsulta(

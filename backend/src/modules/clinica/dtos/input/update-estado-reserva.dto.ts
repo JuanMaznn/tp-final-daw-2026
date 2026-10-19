@@ -1,12 +1,12 @@
-import { IsEnum, IsNotEmpty } from "class-validator";
+import { IsIn, IsNotEmpty } from "class-validator";
 import { EstadosReservasEnum } from "../../enums/estados-reservas.enum.js";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class UpdateEstadoReservaDto{
-    @ApiProperty()
+    @ApiProperty({ enum: [EstadosReservasEnum.ATENDIDO, EstadosReservasEnum.AUSENTE] })
     @IsNotEmpty({ message: "Estado no puede estar vacio"})
-    @IsEnum( EstadosReservasEnum, {
-        message: 'El estado si o si debe ser: Activo, atendido, ausente o cancelado'
+    @IsIn([EstadosReservasEnum.ATENDIDO, EstadosReservasEnum.AUSENTE], {
+        message: 'El médico solo puede marcar el turno como ATENDIDO o AUSENTE',
     })
     estado: EstadosReservasEnum;
 }

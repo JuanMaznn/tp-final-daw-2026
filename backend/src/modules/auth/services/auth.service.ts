@@ -27,14 +27,9 @@ export class AuthService{
             throw new UnauthorizedException("Usuario no encontrado o inactivo");
         }
 
-        if (usuario.clave !== dto.clave) {
-            throw new UnauthorizedException("Credenciales inválidas");
-        }
-        /*
         if (!bcrypt.compareSync(dto.clave, usuario.clave)) {
             throw new UnauthorizedException("Credenciales inválidas");
         }
-        */
         const payload = { nombres: usuario.nombres, sub: usuario.id };
 
         return {

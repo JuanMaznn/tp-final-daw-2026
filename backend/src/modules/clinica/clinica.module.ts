@@ -8,20 +8,15 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { Usuario } from "./entities/usuarios.entity.js";
 import { Reserva } from "./entities/reservas.entity.js";
 import { Medico } from "./entities/medicos.entity.js";
-import { LoginController } from "../auth/controllers/login.controllers.js";
-import { AuthService } from "../auth/services/auth.service.js";
-import { JwtModule } from '@nestjs/jwt';
+import { AuthModule } from "../auth/auth.module.js";
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([Usuario, Reserva, Medico, Usuario]),
-        JwtModule.register({
-            secret: 'tu_clave_secreta_super_segura',
-            signOptions: { expiresIn: '1h' },
-        }),
+        AuthModule,
     ],
-    controllers: [MedicosController, UsuarioController, AdminController, LoginController],
-    providers: [MedicoService, ReservasService, AuthService],
+    controllers: [MedicosController, UsuarioController, AdminController],
+    providers: [MedicoService, ReservasService],
     exports: [ReservasService, MedicoService]
 })
 export class ClinicaModule {

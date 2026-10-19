@@ -4,14 +4,21 @@ import { AuthService } from './services/auth.service.js';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Usuario } from '../clinica/entities/usuarios.entity.js';
 import { JwtModule } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { AuthGuard } from './guards/auth.guard.js';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Usuario]),
-  JwtModule.register({
-    secret: 'tu_clave_secreta_super_segura', // Puedes cambiar esto por lo que prefieras
-    signOptions: { expiresIn: '1h' },
+  JwtModule.registerAsync({
+    inject: [ConfigService],
+    global: true,
+    useFactory: (configService: ConfigService) => ({
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '8h' },
+    }),
   }),],
   controllers: [LoginController],
-  providers: [AuthService],
+  providers: [AuthService, AuthGuard],
+  exports: [AuthGuard],
 })
 export class AuthModule { }

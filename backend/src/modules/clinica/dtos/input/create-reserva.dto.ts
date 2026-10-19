@@ -8,11 +8,6 @@ export class CreateReservaDto{
   id_medico: number;
 
   @ApiProperty()
-  @IsInt()
-  @IsNotEmpty({ message: 'El id_paciente es obligatorio' })
-  id_paciente: number;
-
-  @ApiProperty()
   @IsDateString({}, { message: '' })
   @IsNotEmpty({ message: 'La fecha_hora es obligatoria' })
   fecha_hora: string;
