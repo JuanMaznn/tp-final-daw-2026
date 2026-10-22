@@ -32,13 +32,9 @@ export class AdminController{
     @Post('reservas')
     @HttpCode(HttpStatus.CREATED)
     async reservarTurnoAdmin(
-        @Body() createReservaAdmin: CreateReservaAdminDto
+        @Body() dto: CreateReservaAdminDto
     ): Promise<{ id: number }>{
-        return this.reservaS.reservarTurnoAdmin(
-            createReservaAdmin.id_paciente,
-            createReservaAdmin.id_medico,
-            createReservaAdmin.fecha_hora
-        )
+        return this.reservaS.reservarTurnoAdmin(dto)
     }
 
     @ApiBearerAuth()

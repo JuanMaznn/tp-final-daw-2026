@@ -8,10 +8,12 @@ export class CreateReservaAdminDto {
     @IsNotEmpty()
     id_medico: number;
 
+    @ApiProperty()
     @IsInt()
     @IsNotEmpty()
     id_paciente: number;
 
+    @ApiProperty()
     @IsDateString()
     @IsNotEmpty()
     fecha_hora: string;

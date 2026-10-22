@@ -17,7 +17,7 @@ export class Reserva{
     @Column( {name: "fecha_hora", type: "timestamp"})
     fechaHora: Date;
 
-    @Column({ name: "estado", type: "enum", enum: EstadosReservasEnum, default: EstadosReservasEnum.ACTIVO })
+    @Column({ name: "estados_reservas", type: "enum", enum: EstadosReservasEnum, default: EstadosReservasEnum.ACTIVO })
     estadosReservas: EstadosReservasEnum
 
     @Column({ name: "valor_consulta"})

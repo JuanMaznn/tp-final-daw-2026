@@ -5,6 +5,7 @@ import { And, Between, LessThan, MoreThan, Repository } from "typeorm";
 import { Medico } from "../entities/medicos.entity.js";
 import { EstadosReservasEnum } from "../enums/estados-reservas.enum.js";
 import { ListReservaDTO, ListReservaMedicoDTO, ListReservaPacienteDTO } from "../dtos/output/list-reserva.dto.js";
+import { CreateReservaAdminDto } from "../dtos/input/create-reserva-admin.dto.js";
 
 @Injectable()
 export class ReservasService {
@@ -221,24 +222,25 @@ export class ReservasService {
     return dtoList;
   }
 
-  async reservarTurnoAdmin(idPaciente: number, idMedico: number, fechaHoraStr: string): Promise<{ id: number }> {
-    const medico = await this.medicoR.findOne({ where: { id: idMedico } });
+  async reservarTurnoAdmin(dto: CreateReservaAdminDto): Promise<{ id: number }> {
+    const medico = await this.medicoR.findOne({ where: { id: dto.id_medico }});
     if (!medico) throw new NotFoundException('Médico no encontrado');
 
-    const fechaInicio = new Date(fechaHoraStr);
+    const fechaInicio = new Date(dto.fecha_hora);
     this.validarReglasNegocioCreacion(fechaInicio);
-    await this.validarHorarioYDisponibilidadMedico(idMedico, fechaInicio);
+    await this.validarHorarioYDisponibilidadMedico(dto.id_medico, fechaInicio);
 
     const nuevaReserva = this.reservaR.create({
-      idPaciente,
-      idMedico,
-      fechaHora: fechaInicio,
+      idPaciente: dto.id_paciente,
+      idMedico: dto.id_medico,
+      fechaHora: dto.fecha_hora,
       estadosReservas: EstadosReservasEnum.ACTIVO,
       valorConsulta: medico.valorConsulta,
     });
 
     const guardada = await this.reservaR.save(nuevaReserva);
-    return { id: guardada.id };
+
+    return { id: guardada.id }; 
   }
 
   async cancelarReservaAdmin(idReserva: number): Promise<void> {
