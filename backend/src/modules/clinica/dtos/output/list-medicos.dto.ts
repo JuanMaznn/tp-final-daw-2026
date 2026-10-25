@@ -5,6 +5,9 @@ export class ListMedicoDTO {
     id!: number;
 
     @ApiProperty()
+    idUsuario!: number;
+
+    @ApiProperty()
     matricula!: number;
 
     @ApiProperty()

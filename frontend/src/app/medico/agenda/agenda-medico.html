@@ -1,0 +1,35 @@
+<app-template>
+    <p-datepicker id="fecha" [(ngModel)]="fecha" dateFormat="dd/mm/yy" [showIcon]="true"
+        (onSelect)="refrescarTurnos()"></p-datepicker>
+    <p-table id="tabla" [value]="turnos()" [tableStyle]="{ 'min-width': '50rem' }" [scrollable]="true"
+        scrollHeight="65vh">
+        <ng-template #header>
+            <tr>
+                <th>Hora</th>
+                <th>Paciente</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </ng-template>
+        <ng-template #body let-turno>
+            <tr>
+                <td>{{ turno.fechaHora | date: 'HH:mm' }}</td>
+                <td>{{ turno.paciente.apellidos }}, {{ turno.paciente.nombres }}</td>
+                <td>{{ turno.estado }}</td>
+                <td>
+                    @if (turno.estado === estados.ACTIVO) {
+                    <p-button id="boton-atendido" icon="pi pi-check" pTooltip="Marcar como atendido"
+                        (click)="marcar(turno, 'ATENDIDO')"></p-button>
+                    <p-button icon="pi pi-user-minus" severity="secondary" pTooltip="Marcar como ausente"
+                        (click)="marcar(turno, 'AUSENTE')"></p-button>
+                    }
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+            <tr>
+                <td colspan="4">No hay turnos para la fecha elegida.</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</app-template>

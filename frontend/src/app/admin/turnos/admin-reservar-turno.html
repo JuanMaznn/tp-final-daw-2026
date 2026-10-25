@@ -1,0 +1,21 @@
+<p-dialog header="Reservar turno para un paciente" [modal]="true" [(visible)]="visible" [style]="{ width: '28rem' }"
+    (onHide)="cerrarDialog()">
+
+    <form [formGroup]="form">
+        <div id="contenedor-formulario">
+
+            <ng-select id="paciente" formControlName="paciente" [items]="pacientes()" bindLabel="nombreCompleto"
+                placeholder="Paciente" [clearable]="true" />
+
+            <ng-select id="medico" formControlName="medico" [items]="medicos()" bindLabel="nombreCompleto"
+                placeholder="Médico" [clearable]="true" />
+
+            <p-datepicker id="fecha" formControlName="fechaHora" [showTime]="true" hourFormat="24"
+                dateFormat="dd/mm/yy" [minDate]="fechaMinima" [maxDate]="fechaMaxima" placeholder="Fecha y hora"
+                appendTo="body" />
+
+            <p-button id="guardar" label="Reservar" (click)="guardarReserva()"></p-button>
+
+        </div>
+    </form>
+</p-dialog>

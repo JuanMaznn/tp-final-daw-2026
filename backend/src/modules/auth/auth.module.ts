@@ -6,6 +6,7 @@ import { Usuario } from '../clinica/entities/usuarios.entity.js';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from './guards/auth.guard.js';
+import { RolesGuard } from './guards/roles.guard.js';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Usuario]),
@@ -18,7 +19,7 @@ import { AuthGuard } from './guards/auth.guard.js';
     }),
   }),],
   controllers: [LoginController],
-  providers: [AuthService, AuthGuard],
-  exports: [AuthGuard],
+  providers: [AuthService, AuthGuard, RolesGuard],
+  exports: [AuthGuard, RolesGuard],
 })
 export class AuthModule { }

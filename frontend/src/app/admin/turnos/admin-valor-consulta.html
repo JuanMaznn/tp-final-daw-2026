@@ -1,0 +1,17 @@
+<p-dialog header="Modificar valor de la consulta" [modal]="true" [(visible)]="visible" [style]="{ width: '28rem' }"
+    (onHide)="cerrarDialog()">
+
+    <form [formGroup]="form">
+        <div id="contenedor-formulario">
+
+            <ng-select id="medico" formControlName="medico" [items]="medicos()" bindLabel="nombreCompleto"
+                placeholder="Médico" [clearable]="true" />
+
+            <p-inputnumber id="valor" formControlName="valorConsulta" mode="currency" currency="ARS" locale="es-AR"
+                [maxFractionDigits]="0" placeholder="Nuevo valor" />
+
+            <p-button id="guardar" label="Guardar" (click)="guardarValor()"></p-button>
+
+        </div>
+    </form>
+</p-dialog>

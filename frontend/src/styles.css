@@ -1,1 +1,13 @@
-/* You can add global styles to this file, and also import other style files */
+@import "primeicons/primeicons.css";
+@import "@ng-select/ng-select/themes/default.theme.css";
+
+body{
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: #1f2937;
+    background-color: lightyellow;
+}
+
+.p-dialog{
+    margin: 1rem;
+}

@@ -1,0 +1,53 @@
+<app-template>
+    <div id="barra">
+        <p-datepicker id="filtro-fecha" [(ngModel)]="fechaFiltro" dateFormat="dd/mm/yy" [showIcon]="true"
+            [showClear]="true" placeholder="Todas las fechas" (onSelect)="refrescarTurnos()"
+            (onClear)="refrescarTurnos()"></p-datepicker>
+
+        <ng-select id="filtro-medico" [(ngModel)]="medicoFiltro" [items]="medicos()" bindLabel="nombreCompleto"
+            placeholder="Todos los médicos" [clearable]="true" (change)="refrescarTurnos()" />
+
+        <ng-select id="filtro-paciente" [(ngModel)]="pacienteFiltro" [items]="pacientes()" bindLabel="nombreCompleto"
+            placeholder="Todos los pacientes" [clearable]="true" (change)="refrescarTurnos()" />
+
+        <p-button id="boton-reservar" icon="pi pi-plus" label="Reservar turno" (click)="reservarTurno()"></p-button>
+        <p-button id="boton-valor" icon="pi pi-dollar" label="Valor de consulta" severity="secondary"
+            (click)="modificarValor()"></p-button>
+    </div>
+
+    <p-table id="tabla" [value]="turnos()" [tableStyle]="{ 'min-width': '60rem' }" [scrollable]="true"
+        scrollHeight="65vh">
+        <ng-template #header>
+            <tr>
+                <th>Fecha y hora</th>
+                <th>Paciente</th>
+                <th>Médico</th>
+                <th>Valor de la consulta</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </ng-template>
+        <ng-template #body let-turno>
+            <tr>
+                <td>{{ turno.fechaHora | date: 'dd/MM/yyyy HH:mm' }}</td>
+                <td>{{ turno.paciente.apellidos }}, {{ turno.paciente.nombres }}</td>
+                <td>{{ turno.medico.apellidos }}, {{ turno.medico.nombres }}</td>
+                <td>{{ turno.valorConsulta | currency: 'ARS' : 'symbol-narrow' : '1.0-0' }}</td>
+                <td>{{ turno.estado }}</td>
+                <td>
+                    @if (turno.estado === estados.ACTIVO) {
+                    <p-button icon="pi pi-times" severity="danger" pTooltip="Cancelar turno"
+                        (click)="cancelarTurno(turno)"></p-button>
+                    }
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+            <tr>
+                <td colspan="6">No se encontraron turnos.</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</app-template>
+<app-admin-reservar-turno [(visible)]="reservarVisible"></app-admin-reservar-turno>
+<app-admin-valor-consulta [(visible)]="valorVisible"></app-admin-valor-consulta>

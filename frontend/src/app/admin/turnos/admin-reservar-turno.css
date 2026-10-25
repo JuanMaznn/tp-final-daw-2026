@@ -1,0 +1,16 @@
+#contenedor-formulario{
+    display: flex;
+    flex-direction: column;
+}
+
+#paciente, #medico{
+    margin-bottom: 1rem;
+}
+
+#fecha{
+    margin-bottom: 1rem;
+}
+
+#guardar{
+    align-self: center;
+}

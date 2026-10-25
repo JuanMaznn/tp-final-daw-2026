@@ -156,9 +156,19 @@ export class ReservasService {
     return dtoList;
   }
 
-  async cambiarEstadoReserva(idReserva: number, nuevoEstado: EstadosReservasEnum): Promise<void> {
+  async obtenerIdMedicoDeUsuario(idUsuario: number): Promise<number> {
+    const medico = await this.medicoR.findOne({ where: { idUsuario } });
+    if (!medico) throw new ForbiddenException('El usuario no es un médico');
+    return medico.id;
+  }
+
+  async cambiarEstadoReserva(idReserva: number, nuevoEstado: EstadosReservasEnum, idMedico?: number): Promise<void> {
     const reserva = await this.reservaR.findOne({ where: { id: idReserva } });
     if (!reserva) throw new NotFoundException('Reserva no encontrada');
+
+    if (idMedico !== undefined && reserva.idMedico !== idMedico) {
+      throw new ForbiddenException('No tiene permisos para modificar el turno de otro médico');
+    }
 
     if (reserva.estadosReservas !== EstadosReservasEnum.ACTIVO) {
       throw new BadRequestException('Solo se pueden marcar turnos activos.');
@@ -168,9 +178,10 @@ export class ReservasService {
     await this.reservaR.save(reserva);
   }
 
-  async listarReservasAdmin(fecha?: string, idMedico?: number): Promise<ListReservaDTO[]> {
+  async listarReservasAdmin(fecha?: string, idMedico?: number, idPaciente?: number): Promise<ListReservaDTO[]> {
     const where: any = {};
     if (idMedico) where.idMedico = idMedico;
+    if (idPaciente) where.idPaciente = idPaciente;
     if (fecha) {
       const fechaInicio = new Date(`${fecha}T00:00:00`);
       const fechaFin = new Date(`${fecha}T23:59:59`);
@@ -233,7 +244,7 @@ export class ReservasService {
     const nuevaReserva = this.reservaR.create({
       idPaciente: dto.id_paciente,
       idMedico: dto.id_medico,
-      fechaHora: dto.fecha_hora,
+      fechaHora: fechaInicio,
       estadosReservas: EstadosReservasEnum.ACTIVO,
       valorConsulta: medico.valorConsulta,
     });
