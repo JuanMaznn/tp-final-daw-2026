@@ -14,7 +14,7 @@
     height: 55vh;
     max-width: 20rem;
     width: 80vw;
-    background-color: lightcyan;
+    background-color: #eef2f8;
     border-radius: 25px;
 }
 
@@ -28,4 +28,34 @@
 
 #header{
     text-align: center;
+}
+
+:host ::ng-deep .boton-login,
+:host ::ng-deep .boton-login:hover,
+:host ::ng-deep .boton-login:focus,
+:host ::ng-deep .boton-login:focus-visible,
+:host ::ng-deep .boton-login:active {
+    background-color: #ffffff !important;
+    color: #003049 !important;
+    border: 2px solid #003049 !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+:host ::ng-deep .boton-login .p-button-label {
+    color: #003049 !important;
+}
+
+/* Campo de nombre de usuario */
+:host ::ng-deep #nombre:enabled:focus {
+    border-color: #003049 !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Campo de contraseña */
+:host ::ng-deep #clave input:enabled:focus {
+    border-color: #003049 !important;
+    box-shadow: none !important;
+    outline: none !important;
 }
