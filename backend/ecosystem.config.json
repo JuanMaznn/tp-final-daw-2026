@@ -1,0 +1,21 @@
+{
+  "apps": [
+    {
+      "name": "gestor-de-proyectos",
+      "script": "dist/main.js",
+      "env": {
+        "NODE_ENV": "production",
+        "PORT": 4000,
+        "DB_HOST": "localhost",
+        "DB_PORT": 5432,
+        "DB_USERNAME": "daw",
+        "DB_PASSWORD": "2026",
+        "DB_NAME": "clinica_medica",
+        "DB_LOGGING": "false",
+        "SWAGGER_HABILITADO": false,
+        "JWT_SECRET": "d48b97e3855ed8662db2a7132d8f2a3a3bd6b158ee0b9020a6d05b228ba929aa"
+      },
+      "time": true
+    }
+  ]
+}
