@@ -1,0 +1,45 @@
+events {
+    worker_connections 1024;
+}
+
+http {
+    include mime.types;
+
+    # HTTP redirige a HTTPS (igual que en el ejemplo de la cátedra).
+    server {
+        listen 80;
+        server_name localhost;
+
+        return 301 https://$host$request_uri;
+    }
+
+    server {
+        listen 443 ssl;
+        server_name localhost;
+
+        # Certificados locales (mkcert o equivalentes). Ajustá las rutas
+        # según dónde los copies en esta máquina.
+        ssl_certificate ssl/localhost.pem;
+        ssl_certificate_key ssl/localhost-key.pem;
+
+        # Build de Angular 21 (@angular/build:application).
+        # angular.json no define outputPath; el default es dist/<proyecto>/browser.
+        # En este repo: frontend/dist/frontend/browser
+        # En Homebrew el prefijo suele ser /opt/homebrew/var/www; si copiás el
+        # build ahí, podés dejar `root html;` como en el ejemplo del profe.
+        location / {
+            root /Users/matiasterrera/Projects/tp-final-daw-2026/frontend/dist/frontend/browser;
+            index index.html;
+            # SPA: rutas de Angular (/, /login, /turnos, etc.) caen en index.html.
+            try_files $uri $uri/ /index.html;
+        }
+
+        # El backend Nest usa prefijo global `api` y escucha en el puerto 4000
+        # (ver backend/ecosystem.config.json).
+        location /api/ {
+            proxy_pass http://127.0.0.1:4000/api/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+    }
+}
