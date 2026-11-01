@@ -43,3 +43,13 @@ CREATE TABLE reservas (
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 
+-- Usuarios de prueba (uno por rol)
+INSERT INTO usuarios (documento, apellidos, nombres, email, clave, estado, rol) VALUES
+('30111222', 'Admin', 'admin', 'admin@clinica.com', crypt('admin', gen_salt('bf', 10)), 'ACTIVO', 'ADMINISTRADOR'),
+('30222333', 'Medico', 'medico', 'medico@clinica.com', crypt('medico', gen_salt('bf', 10)), 'ACTIVO', 'MEDICO'),
+('30333444', 'Paciente', 'paciente', 'paciente@clinica.com', crypt('paciente', gen_salt('bf', 10)), 'ACTIVO', 'PACIENTE'),
+('30444555', 'Baja', 'inactivo', 'inactivo@clinica.com', crypt('inactivo', gen_salt('bf', 10)), 'BAJA', 'PACIENTE');
+
+-- El usuario médico también va en la tabla medicos
+INSERT INTO medicos (id_usuario, matricula, valor_consulta)
+SELECT id, 12345, 20000 FROM usuarios WHERE documento = '30222333';

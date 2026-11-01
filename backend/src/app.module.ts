@@ -4,9 +4,6 @@ import { AuthModule } from './modules/auth/auth.module.js';
 import { ClinicaModule } from './modules/clinica/clinica.module.js';
 import { MedicoService } from './modules/clinica/services/medicos.service.js';
 import { ReservasService } from './modules/clinica/services/reservas.service.js';
-import { Usuario } from './modules/clinica/entities/usuarios.entity.js';
-import { Reserva } from './modules/clinica/entities/reservas.entity.js';
-import { Medico } from './modules/clinica/entities/medicos.entity.js';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthService } from './modules/auth/services/auth.service.js';
 
@@ -17,17 +14,19 @@ import { AdminController } from './modules/clinica/controllers/admin.controllers
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'daw',
-      password: '2026',
-      database: 'clinica_medica',
-      entities: [Usuario, Reserva, Medico],
-      synchronize: true,
+      host: process.env.DB_HOST,
+      port: parseInt(process.env.DB_PORT || '5432'),
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+      synchronize: false,
+      autoLoadEntities: true,
+      logging: process.env.DB_LOGGING === 'true',
+      logger: 'advanced-console',
     }),
-    ConfigModule.forRoot({ isGlobal: true }),
     AuthModule,
     ClinicaModule,
   ],

@@ -1,9 +1,11 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm"
 import { Reserva } from "../entities/reservas.entity.js";
-import { Between, Repository } from "typeorm";
+import { And, Between, LessThan, MoreThan, Repository } from "typeorm";
 import { Medico } from "../entities/medicos.entity.js";
 import { EstadosReservasEnum } from "../enums/estados-reservas.enum.js";
+import { ListReservaDTO, ListReservaMedicoDTO, ListReservaPacienteDTO } from "../dtos/output/list-reserva.dto.js";
+import { CreateReservaAdminDto } from "../dtos/input/create-reserva-admin.dto.js";
 
 @Injectable()
 export class ReservasService {
@@ -13,15 +15,50 @@ export class ReservasService {
     ) { }
 
 
-    async obtenerTurnosUsuario(idUsuario: number): Promise<Reserva[]> {
-        return this.reservaR.find({
+    async obtenerTurnosUsuario(idUsuario: number): Promise<ListReservaDTO[]> {
+        const reservas = await this.reservaR.find({
             where: { idPaciente: idUsuario },
-            relations: { medico: true},
+            select: {
+                id: true,
+                fechaHora: true,
+                estadosReservas: true,
+                valorConsulta: true,
+                medico: {
+                    id: true,
+                    usuario: {
+                        nombres: true,
+                        apellidos: true,
+                    },
+                },
+                paciente: {
+                    nombres: true,
+                    apellidos: true,
+                },
+            },
+            relations: { medico: { usuario: true }, paciente: true },
             order: { fechaHora: 'ASC' },
         });
+        const dtoList: ListReservaDTO[] = [];
+        for (const r of reservas) {
+            const dto = new ListReservaDTO();
+            dto.id = r.id;
+            dto.fechaHora = r.fechaHora;
+            dto.estado = r.estadosReservas;
+            dto.valorConsulta = r.valorConsulta;
+            const medicoDto = new ListReservaMedicoDTO();
+            medicoDto.nombres = r.medico.usuario.nombres;
+            medicoDto.apellidos = r.medico.usuario.apellidos;
+            dto.medico = medicoDto;
+            const pacienteDto = new ListReservaPacienteDTO();
+            pacienteDto.nombres = r.paciente.nombres;
+            pacienteDto.apellidos = r.paciente.apellidos;
+            dto.paciente = pacienteDto;
+            dtoList.push(dto);
+        }
+        return dtoList;
     }
 
-    async crearReservaPaciente(dto: {idPaciente: number, idMedico: number, fechaHora: string}): Promise<Reserva> {
+    async crearReservaPaciente(dto: {idPaciente: number, idMedico: number, fechaHora: string}): Promise<{ id: number }> {
     const medico = await this.medicoR.findOne({ 
       where: { id: dto.idMedico },
       relations: { usuario: true }
@@ -30,23 +67,7 @@ export class ReservasService {
 
     const fechaInicio = new Date(dto.fechaHora);
     this.validarReglasNegocioCreacion(fechaInicio);
-
-    const hora = fechaInicio.getHours();
-    if (hora < 8 || hora >= 16) {
-      throw new BadRequestException('El horario de atención es de 08:00 a 16:00 hs.');
-    }
-
-    const turnoOcupado = await this.reservaR.findOne({
-      where: {
-        idMedico: dto.idMedico,
-        fechaHora: fechaInicio,
-        estadosReservas: EstadosReservasEnum.ACTIVO,
-      }
-    });
-
-    if (turnoOcupado) {
-      throw new BadRequestException('El horario seleccionado ya se encuentra ocupado.');
-    }
+    await this.validarHorarioYDisponibilidadMedico(dto.idMedico, fechaInicio);
 
     const nuevaReserva = this.reservaR.create({
       idPaciente: dto.idPaciente,
@@ -56,10 +77,11 @@ export class ReservasService {
       valorConsulta: medico.valorConsulta,
     });
 
-    return this.reservaR.save(nuevaReserva);
+    const guardada = await this.reservaR.save(nuevaReserva);
+    return { id: guardada.id };
   }
 
-  async cancelarReservaPaciente(idReserva: number, idUsuario: number): Promise<Reserva> {
+  async cancelarReservaPaciente(idReserva: number, idUsuario: number): Promise<void> {
     const reserva = await this.reservaR.findOne({ where: { id: idReserva } });
     if (!reserva) throw new NotFoundException('Reserva no encontrada');
 
@@ -79,85 +101,157 @@ export class ReservasService {
     }
 
     reserva.estadosReservas = EstadosReservasEnum.CANCELADO; 
-    return this.reservaR.save(reserva);
+    await this.reservaR.save(reserva);
   }
 
-  async obtenerReservaPorFecha(idMedico: number, fechaStr: string): Promise<Reserva[]> {
+  async obtenerReservaPorFecha(idMedico: number, fechaStr: string): Promise<ListReservaDTO[]> {
     const fechaInicio = new Date(`${fechaStr}T00:00:00`);
     const fechaFin = new Date(`${fechaStr}T23:59:59`);
 
-    return this.reservaR.find({
+    const reservas = await this.reservaR.find({
       where: {
         idMedico: idMedico,
         fechaHora: Between(fechaInicio, fechaFin),
       },
-      relations: {
-        paciente: true,
+      select: {
+        id: true,
+        fechaHora: true,
+        estadosReservas: true,
+        valorConsulta: true,
+        medico: {
+          id: true,
+          usuario: {
+            nombres: true,
+            apellidos: true,
+          },
+        },
+        paciente: {
+          nombres: true,
+          apellidos: true,
+        },
       },
-      order: { fechaHora: 'ASC' },
-    });
-  }
-
-  async cambiarEstadoReserva(idReserva: number, nuevoEstado: EstadosReservasEnum): Promise<Reserva> {
-    const reserva = await this.reservaR.findOne({ where: { id: idReserva } });
-    if (!reserva) throw new NotFoundException('Reserva no encontrada');
-
-    reserva.estadosReservas = nuevoEstado;
-    return this.reservaR.save(reserva);
-  }
-
-  async listarReservasAdmin(fecha?: string, idMedico?: number): Promise<Reserva[]> {
-    const where: any = {};
-    if (idMedico) where.idMedico = idMedico;
-    if (fecha) {
-      const fechaInicio = new Date(`${fecha}T00:00:00`);
-      const fechaFin = new Date(`${fecha}T23:59:59`);
-      where.fechaHora = Between(fechaInicio, fechaFin);
-    }
-
-    return this.reservaR.find({
-      where,
       relations: {
         medico: { usuario: true },
         paciente: true,
       },
       order: { fechaHora: 'ASC' },
     });
+    const dtoList: ListReservaDTO[] = [];
+    for (const r of reservas) {
+      const dto = new ListReservaDTO();
+      dto.id = r.id;
+      dto.fechaHora = r.fechaHora;
+      dto.estado = r.estadosReservas;
+      dto.valorConsulta = r.valorConsulta;
+      const medicoDto = new ListReservaMedicoDTO();
+      medicoDto.nombres = r.medico.usuario.nombres;
+      medicoDto.apellidos = r.medico.usuario.apellidos;
+      dto.medico = medicoDto;
+      const pacienteDto = new ListReservaPacienteDTO();
+      pacienteDto.nombres = r.paciente.nombres;
+      pacienteDto.apellidos = r.paciente.apellidos;
+      dto.paciente = pacienteDto;
+      dtoList.push(dto);
+    }
+    return dtoList;
   }
 
-  async reservarTurnoAdmin(idPaciente: number, idMedico: number, fechaHoraStr: string): Promise<Reserva> {
-    const medico = await this.medicoR.findOne({ where: { id: idMedico } });
+  async obtenerIdMedicoDeUsuario(idUsuario: number): Promise<number> {
+    const medico = await this.medicoR.findOne({ where: { idUsuario } });
+    if (!medico) throw new ForbiddenException('El usuario no es un médico');
+    return medico.id;
+  }
+
+  async cambiarEstadoReserva(idReserva: number, nuevoEstado: EstadosReservasEnum, idMedico?: number): Promise<void> {
+    const reserva = await this.reservaR.findOne({ where: { id: idReserva } });
+    if (!reserva) throw new NotFoundException('Reserva no encontrada');
+
+    if (idMedico !== undefined && reserva.idMedico !== idMedico) {
+      throw new ForbiddenException('No tiene permisos para modificar el turno de otro médico');
+    }
+
+    if (reserva.estadosReservas !== EstadosReservasEnum.ACTIVO) {
+      throw new BadRequestException('Solo se pueden marcar turnos activos.');
+    }
+
+    reserva.estadosReservas = nuevoEstado;
+    await this.reservaR.save(reserva);
+  }
+
+  async listarReservasAdmin(fecha?: string, idMedico?: number, idPaciente?: number): Promise<ListReservaDTO[]> {
+    const where: any = {};
+    if (idMedico) where.idMedico = idMedico;
+    if (idPaciente) where.idPaciente = idPaciente;
+    if (fecha) {
+      const fechaInicio = new Date(`${fecha}T00:00:00`);
+      const fechaFin = new Date(`${fecha}T23:59:59`);
+      where.fechaHora = Between(fechaInicio, fechaFin);
+    }
+
+    const reservas = await this.reservaR.find({
+      where,
+      select: {
+        id: true,
+        fechaHora: true,
+        estadosReservas: true,
+        valorConsulta: true,
+        medico: {
+          id: true,
+          usuario: {
+            nombres: true,
+            apellidos: true,
+          },
+        },
+        paciente: {
+          nombres: true,
+          apellidos: true,
+        },
+      },
+      relations: {
+        medico: { usuario: true },
+        paciente: true,
+      },
+      order: { fechaHora: 'ASC' },
+    });
+    const dtoList: ListReservaDTO[] = [];
+    for (const r of reservas) {
+      const dto = new ListReservaDTO();
+      dto.id = r.id;
+      dto.fechaHora = r.fechaHora;
+      dto.estado = r.estadosReservas;
+      dto.valorConsulta = r.valorConsulta;
+      const medicoDto = new ListReservaMedicoDTO();
+      medicoDto.nombres = r.medico.usuario.nombres;
+      medicoDto.apellidos = r.medico.usuario.apellidos;
+      dto.medico = medicoDto;
+      const pacienteDto = new ListReservaPacienteDTO();
+      pacienteDto.nombres = r.paciente.nombres;
+      pacienteDto.apellidos = r.paciente.apellidos;
+      dto.paciente = pacienteDto;
+      dtoList.push(dto);
+    }
+    return dtoList;
+  }
+
+  async reservarTurnoAdmin(dto: CreateReservaAdminDto): Promise<{ id: number }> {
+    const medico = await this.medicoR.findOne({ where: { id: dto.id_medico }});
     if (!medico) throw new NotFoundException('Médico no encontrado');
 
-    const fechaInicio = new Date(fechaHoraStr);
+    const fechaInicio = new Date(dto.fecha_hora);
     this.validarReglasNegocioCreacion(fechaInicio);
-
-    const hora = fechaInicio.getHours();
-    if (hora < 8 || hora >= 16) {
-      throw new BadRequestException('El horario de atención es de 08:00 a 16:00 hs.');
-    }
-
-    const turnoOcupado = await this.reservaR.findOne({
-      where: {
-        idMedico: idMedico,
-        fechaHora: fechaInicio,
-        estadosReservas: EstadosReservasEnum.ACTIVO,
-      }
-    });
-
-    if (turnoOcupado) {
-      throw new BadRequestException('El horario seleccionado ya se encuentra ocupado.');
-    }
+    await this.validarHorarioYDisponibilidadMedico(dto.id_medico, fechaInicio);
 
     const nuevaReserva = this.reservaR.create({
-      idPaciente,
-      idMedico,
+      idPaciente: dto.id_paciente,
+      idMedico: dto.id_medico,
       fechaHora: fechaInicio,
       estadosReservas: EstadosReservasEnum.ACTIVO,
       valorConsulta: medico.valorConsulta,
     });
 
-    return this.reservaR.save(nuevaReserva);
+    const guardada = await this.reservaR.save(nuevaReserva);
+
+    return { id: guardada.id }; 
   }
 
   async cancelarReservaAdmin(idReserva: number): Promise<void> {
@@ -171,6 +265,33 @@ export class ReservasService {
 
     reserva.estadosReservas = EstadosReservasEnum.CANCELADO;
     await this.reservaR.save(reserva);
+  }
+
+  private async validarHorarioYDisponibilidadMedico(idMedico: number, fechaInicio: Date): Promise<void> {
+    const minutosInicio = fechaInicio.getHours() * 60 + fechaInicio.getMinutes();
+    const minutosFinTurno = minutosInicio + 60;
+    const minutosApertura = 8 * 60;
+    const minutosCierre = 16 * 60;
+
+    if (minutosInicio < minutosApertura || minutosFinTurno > minutosCierre) {
+      throw new BadRequestException('El horario de atención es de 08:00 a 16:00 hs.');
+    }
+
+    const unaHoraMs = 60 * 60 * 1000;
+    const turnoOcupado = await this.reservaR.findOne({
+      where: {
+        idMedico,
+        estadosReservas: EstadosReservasEnum.ACTIVO,
+        fechaHora: And(
+          MoreThan(new Date(fechaInicio.getTime() - unaHoraMs)),
+          LessThan(new Date(fechaInicio.getTime() + unaHoraMs)),
+        ),
+      },
+    });
+
+    if (turnoOcupado) {
+      throw new BadRequestException('El horario seleccionado ya se encuentra ocupado.');
+    }
   }
 
   private validarReglasNegocioCreacion(fechaInicio: Date) {

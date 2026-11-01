@@ -1,0 +1,13 @@
+#barra{
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+#filtro-medico, #filtro-paciente{
+    min-width: 16rem;
+}
+
+#tabla{
+    margin-top: 1rem;
+}

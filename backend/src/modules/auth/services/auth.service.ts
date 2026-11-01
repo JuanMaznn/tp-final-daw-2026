@@ -8,34 +8,29 @@ import { InjectRepository } from "@nestjs/typeorm";
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
-export class AuthService{
+export class AuthService {
     constructor(
         @InjectRepository(Usuario)
         private readonly usuarioR: Repository<Usuario>,
         private readonly jwtService: JwtService
-    ){}
+    ) { }
 
-    async login(dto: LoginDTO): Promise<{accessToken: string}>{
+    async login(dto: LoginDTO): Promise<{ accessToken: string }> {
         const usuario = await this.usuarioR.findOne({
             where: {
                 nombres: dto.nombre,
-                estadosUsuarios: EstadosUsuarios.ACTIVA
+                estadosUsuarios: EstadosUsuarios.ACTIVO
             }
         });
 
-        if(!usuario){
+        if (!usuario) {
             throw new UnauthorizedException("Usuario no encontrado o inactivo");
         }
 
-        if (usuario.clave !== dto.clave) {
-            throw new UnauthorizedException("Credenciales inválidas");
-        }
-        /*
         if (!bcrypt.compareSync(dto.clave, usuario.clave)) {
             throw new UnauthorizedException("Credenciales inválidas");
         }
-        */
-        const payload = { nombres: usuario.nombres, sub: usuario.id };
+        const payload = { nombres: usuario.nombres, sub: usuario.id, rol: usuario.rolesUsuarios };
 
         return {
             accessToken: this.jwtService.sign(payload)

@@ -1,8 +1,6 @@
 import { Column, PrimaryGeneratedColumn, OneToOne, Entity, OneToMany } from "typeorm";
 import { EstadosUsuarios } from "../../auth/enums/estados-usuarios.enum.js";
 import { RolesUsuariosEnum } from "../../auth/enums/roles-usuarios.enum.js";
-import { Medico } from "./medicos.entity.js";
-import { Reserva } from "./reservas.entity.js";
 
 @Entity({name: "usuarios"})
 export class Usuario{

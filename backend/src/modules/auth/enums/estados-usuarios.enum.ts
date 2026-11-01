@@ -1,5 +1,5 @@
 
 export enum EstadosUsuarios{
-    ACTIVA ='ACTIVO',
+    ACTIVO ='ACTIVO',
     BAJA = 'BAJA'
 }
