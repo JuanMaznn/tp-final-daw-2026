@@ -1,4 +1,3 @@
-// Misma forma que ListReservaDTO del back (dtos/output/list-reserva.dto.ts)
 export interface ListReservaDTO {
     id: number;
     fechaHora: string;

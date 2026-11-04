@@ -3,8 +3,6 @@ import { Reflector } from "@nestjs/core";
 import { ROLES_KEY } from "../decorators/roles.decorator.js";
 import { RolesUsuariosEnum } from "../enums/roles-usuarios.enum.js";
 
-// Se usa DESPUÉS de AuthGuard: @UseGuards(AuthGuard, RolesGuard).
-// AuthGuard deja el payload del token en request['usuario'] y este guard lee el rol de ahí.
 @Injectable()
 export class RolesGuard implements CanActivate {
     constructor(private readonly reflector: Reflector) { }
