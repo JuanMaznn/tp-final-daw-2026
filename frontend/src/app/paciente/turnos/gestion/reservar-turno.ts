@@ -17,7 +17,6 @@ import { ReservarTurnoApiClient } from "./reservar-turno-api-client";
 })
 export class ReservarTurno implements OnInit {
 
-    // model() permite el binding de dos vías [(visible)] con el componente padre.
     visible: ModelSignal<boolean> = model(false);
 
     private readonly messageService: MessageService = inject(MessageService);
@@ -62,8 +61,6 @@ export class ReservarTurno implements OnInit {
         const medico: ListMedicoDTO = this.form.value.medico;
         const fecha: Date = this.form.value.fechaHora;
 
-        // Se arma el texto SIN la "Z" final (ej. 2026-11-03T10:00:00) para que el back
-        // lo tome como hora local de Argentina. Con "Z" se interpretaría como UTC.
         const pad = (n: number): string => String(n).padStart(2, "0");
         const fechaHora: string =
             `${fecha.getFullYear()}-${pad(fecha.getMonth() + 1)}-${pad(fecha.getDate())}` +

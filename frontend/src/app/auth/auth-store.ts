@@ -16,13 +16,10 @@ export class AuthStore {
         return sessionStorage.getItem("accessToken");
     }
 
-    // El token JWT tiene 3 partes separadas por "." (header.payload.firma).
-    // El payload (la del medio) guarda { nombres, sub }, y "sub" es el id del usuario.
     obtenerIdUsuario(): number | null {
         return this.leerPayload()?.sub ?? null;
     }
 
-    // El payload también guarda "rol" (PACIENTE, MEDICO o ADMINISTRADOR).
     obtenerRol(): string | null {
         return this.leerPayload()?.rol ?? null;
     }
