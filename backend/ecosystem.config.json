@@ -1,7 +1,7 @@
 {
   "apps": [
     {
-      "name": "gestor-de-proyectos",
+      "name": "clinica-medica",
       "script": "dist/main.js",
       "env": {
         "NODE_ENV": "production",
